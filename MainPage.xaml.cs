@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 using System.Text;
 using System.ComponentModel;
 using NLog;
+using System.Collections.ObjectModel;
+using Windows.UI.Core;
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace ble
@@ -25,10 +27,9 @@ namespace ble
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page, INotifyPropertyChanged
+    public sealed partial class MainPage : Page
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-        public List<string> Log { get; private set; } = new List<string>();
+        public ObservableCollection<string> Log { get; private set; } = new ObservableCollection<string>();
         private NewLib dev;
         private ILogger log = LogManager.GetLogger("BLE");
         public MainPage()
@@ -42,9 +43,11 @@ namespace ble
         private void Read_data(object sender, string e)
         {
             // data arrives here, if you attach debugger you can capture it.
-            Log.Add(e);
+            Task.Run(() => Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+              {
+                  Log.Add(e);
+              }));
             log.Debug("Got data {data}", e);
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Log)));
         }
     }
 }
