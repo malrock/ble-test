@@ -29,24 +29,45 @@ namespace ble
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        /// <summary>
+        /// Data binding object
+        /// </summary>
         public ObservableCollection<string> Log { get; private set; } = new ObservableCollection<string>();
+        /// <summary>
+        /// Private instance of lib
+        /// </summary>
         private NewLib dev;
+        /// <summary>
+        /// Instance of NLog logger.
+        /// </summary>
         private ILogger log = LogManager.GetLogger("BLE");
+        /// <summary>
+        /// Main constructor
+        /// </summary>
         public MainPage()
         {
             this.InitializeComponent();
+            // set instance
             dev = new NewLib();
+            // bind event handler
             dev.HaveData += Read_data;
+            // run detection and notification
             dev.Start();
         }
-
+        /// <summary>
+        /// Event handler to read BLE UART data
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Read_data(object sender, string e)
         {
             // data arrives here, if you attach debugger you can capture it.
             Task.Run(() => Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
               {
+                  // add value to datasource for visualization
                   Log.Add(e);
               }));
+            // Log data
             log.Debug("Got data {data}", e);
         }
     }

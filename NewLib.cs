@@ -10,21 +10,56 @@ using Windows.Storage.Streams;
 
 namespace ble
 {
+    /// <summary>
+    /// Library to read BLE UART notification values
+    /// </summary>
     public class NewLib
     {
         // Query for extra properties you want returned
         readonly string[] requestedProperties = { };
+        // Should device be paired?
         readonly bool paired = true;
+        /// <summary>
+        /// BLE Device service ID
+        /// </summary>
         public readonly Guid UARTServiceId = Guid.Parse("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
+        /// <summary>
+        /// BLE UART Read characteristic ID
+        /// </summary>
         public readonly Guid TXCharacteristicsId = Guid.Parse("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
+        /// <summary>
+        /// BLE UART Notification characteristic ID
+        /// </summary>
         public readonly Guid RXCharacteristicsId = Guid.Parse("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
+        /// <summary>
+        /// BLE Device
+        /// </summary>
         DeviceWatcher deviceWatcher;
+        // Name of BLE device, change it if differs.
         readonly string BleDevice = "BLEtest";
+        /// <summary>
+        /// Detected BLE device ID
+        /// </summary>
         public string BleId { get; set; }
+        /// <summary>
+        /// Detected BLE device
+        /// </summary>
         public BluetoothLEDevice BluetoothLeDevice { get; private set; }
+        /// <summary>
+        /// Detected BLE device service
+        /// </summary>
         public GattDeviceService Service { get; private set; }
+        /// <summary>
+        /// Detected BLE device service notification characteristic
+        /// </summary>
         public GattCharacteristic Characteristic { get; private set; }
+        /// <summary>
+        /// This event will be activated by BLE device notification.
+        /// </summary>
         public EventHandler<string> HaveData;
+        /// <summary>
+        /// Call Start method to detect device and activate notification flow.
+        /// </summary>
         public void  Start()
         {
             deviceWatcher =
@@ -46,27 +81,47 @@ namespace ble
             // Start the watcher.
             deviceWatcher.Start();
         }
-
+        /// <summary>
+        /// Handler for BT device watcher stop event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void DeviceWatcher_Stopped(DeviceWatcher sender, object args)
         {
 
         }
-
+        /// <summary>
+        /// Handler for BT device event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void DeviceWatcher_EnumerationCompleted(DeviceWatcher sender, object args)
         {
 
         }
-
+        /// <summary>
+        /// Handler for BT device update
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void DeviceWatcher_Updated(DeviceWatcher sender, DeviceInformationUpdate args)
         {
 
         }
-
+        /// <summary>
+        /// Handler for BT device removal
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void DeviceWatcher_Removed(DeviceWatcher sender, DeviceInformationUpdate args)
         {
 
         }
-
+        /// <summary>
+        /// Handler for BT device detection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void DeviceWatcher_Added(DeviceWatcher sender, DeviceInformation args)
         {
             HaveData?.Invoke(this,$"Found device {args.Name} with id {args.Id}");
@@ -78,6 +133,10 @@ namespace ble
             }
             
         }
+        /// <summary>
+        /// Connect BLE device via ID
+        /// </summary>
+        /// <param name="Id"></param>
         async void ConnectDevice(string Id)
         {
             // Note: BluetoothLEDevice.FromIdAsync must be called from a UI thread because it may prompt for consent.
@@ -115,15 +174,24 @@ namespace ble
                 HaveData?.Invoke(this, "Subsrcription failed");
             }
         }
+        /// <summary>
+        /// This is internal event that is handeling BLE notification.
+        /// Currently data is handled as string, change this to match real data format.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void Characteristic_ValueChanged(GattCharacteristic sender,
                                     GattValueChangedEventArgs args)
         {
             // An Indicate or Notify reported that the value has changed.
             var reader = DataReader.FromBuffer(args.CharacteristicValue);
-            // Parse the data however required.
+            // Parse the data however required- for demo purpose we will take in string
             string res = reader.ReadString(reader.UnconsumedBufferLength);
+            // Convert string to bytes
             var plainTextBytes = Encoding.UTF8.GetBytes(res);
-            var outString = Convert.ToBase64String(plainTextBytes);
+            // Convert bytes to visual string (hex/base64)
+            var outString = BitConverter.ToString(plainTextBytes);
+            //var outString = Convert.ToBase64String(plainTextBytes);
             HaveData?.Invoke(this, outString);
         }
     }
