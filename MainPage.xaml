@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <TextBlock Text="{x:Bind _log}" />
-    </StackPanel>
+    <ScrollViewer x:Name="Daa">
+        <ListView ItemsSource="{x:Bind Log}"></ListView>
+    </ScrollViewer>
 </Page>
